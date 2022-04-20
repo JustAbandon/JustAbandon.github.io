@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>record and share</title>
+    <link>https://justabandon.github.io/</link>
+    <description>Recent content on record and share</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 20 Apr 2022 18:50:34 +0800</lastBuildDate><atom:link href="https://justabandon.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title></title>
+      <link>https://justabandon.github.io/posts/test/</link>
+      <pubDate>Wed, 20 Apr 2022 18:50:34 +0800</pubDate>
+      
+      <guid>https://justabandon.github.io/posts/test/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>https://justabandon.github.io/about/</link>
+      <pubDate>Wed, 20 Apr 2022 16:33:08 +0800</pubDate>
+      
+      <guid>https://justabandon.github.io/about/</guid>
+      <description>about me
+关于我</description>
+    </item>
+    
+  </channel>
+</rss>
