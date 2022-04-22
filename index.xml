@@ -8,12 +8,26 @@
     <language>en</language>
     <lastBuildDate>Wed, 20 Apr 2022 18:50:34 +0800</lastBuildDate><atom:link href="https://justabandon.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title></title>
-      <link>https://justabandon.github.io/posts/test/</link>
+      <title>PE文件初探(上)</title>
+      <link>https://justabandon.github.io/posts/pe%E6%96%87%E4%BB%B6%E5%88%9D%E6%8E%A2/</link>
       <pubDate>Wed, 20 Apr 2022 18:50:34 +0800</pubDate>
       
-      <guid>https://justabandon.github.io/posts/test/</guid>
-      <description></description>
+      <guid>https://justabandon.github.io/posts/pe%E6%96%87%E4%BB%B6%E5%88%9D%E6%8E%A2/</guid>
+      <description>#PE文件初探
+ 前言: 最近在研究免杀方面的知识和碰到一个有趣的工具 PE文件转shellcode 并对此进行探索而记录此文章
+ 1.什么是PE文件    PE文件是Windows操作系统下使用的一种可执行文件，由COFF（UNIX平台下的通用对象文件格式）格式文件发展而来。32位称为PE32，64位称为PE+或PE32+。
+可移植可执行文件( PE ) 格式是用于32 位和 64 位版本的Windows操作系统的可执行文件、目标代码、DLL和其他文件格式。PE 格式是一种数据结构，它封装了 Windows 操作系统加载程序管理打包的可执行代码所需的信息。这包括链接、API导出和导入表、资源管理数据和线程本地存储(TLS) 数据的动态库引用。在NT操作系统上，PE 格式用于EXE 、DLL、SYS（设备驱动程序）、MUI等文件类型。统一可扩展固件接口 (UEFI)规范指出 PE 是 EFI 环境中的标准可执行格式
+PE是一种数据格式,拥有这种数据格式的文件称作PE文件
+2.PE文件格式    常见PE文件后缀:
+ 可执行文件 EXE,SCR
+  库系列 DLL, OCX, CPL, DRV
+  驱动程序系列 SYS, VXD
+  对象文件系列 OBJ
+  基本结构分为头与体,以下为PE文件基本结构简单描述,详细信息有机会再加
+头:
+ DOS Header （DOS头)
+  DOS stub (DOS根)
+  NT Header (NT 头)</description>
     </item>
     
     <item>
